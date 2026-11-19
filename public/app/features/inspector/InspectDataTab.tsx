@@ -89,7 +89,9 @@ export const InspectDataTab = memo(function InspectDataTab({
   const transformedData = !data ? [] : shouldJoin && joined?.input === data ? joined.frames : data;
 
   const exportCsv = (dataFrames: DataFrame[]) => {
-    const dataFrame = dataFrames[dataFrameIndex];
+    // Mirror the render path so the exported frame is the one shown in the table
+    const index = !dataFrames[dataFrameIndex] ? 0 : dataFrameIndex;
+    const dataFrame = dataFrames[index];
 
     downloadDataFrameAsCsv(dataFrame, dataName, {}, transformId, excelCompatibilityMode);
   };
@@ -289,12 +291,7 @@ function cleanTableConfigFromFieldConfig(fieldConfig: FieldConfigSource): FieldC
 
   // clear all table override properties
   for (const override of fieldConfig.overrides) {
-    for (const prop of override.properties) {
-      if (prop.id.startsWith('custom.')) {
-        const index = override.properties.indexOf(prop);
-        override.properties.slice(index, 1);
-      }
-    }
+    override.properties = override.properties.filter((prop) => !prop.id.startsWith('custom.'));
   }
 
   return fieldConfig;
